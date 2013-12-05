@@ -159,9 +159,9 @@ function newDoc()
           bValid = bValid && checkLength( interest, "interest", 0, 60 );
           bValid = bValid && checkLength( time, "time", 0, 80 );
           bValid = bValid && checkLength( place, "place", 0, 50 );
-          bValid = bValid && checkRegexp( interest, /^[a-z]([0-9a-z_])+$/i, "Activity name may consist of a-z, 0-9, underscores, begin with a letter." );
-         bValid = bValid && checkRegexp(time, /^([0-9a-z-:])+$/i, "Incorrect time frame ");
-         bValid = bValid && checkRegexp( place, /^([0-9a-zA-Z ])+$/, "Place field only allow : a-z 0-9 and A-Z" );
+          bValid = bValid && checkRegexp( interest, /^[a-z]([0-9a-z_, !A-Z])+$/i, "Incorrect Activity Input." );
+         bValid = bValid && checkRegexp(time, /^([0-9a-z-:])+$/i, "Incorrect time frame. ");
+         bValid = bValid && checkRegexp( place, /^([0-9a-zA-Z,: ])+$/, "Invalid location." );
     
           if ( bValid ) {
 			$("form#eventForm").submit();
@@ -195,8 +195,8 @@ function newDoc()
 <!-- search bar -->
 <div class="light">
 <form action="/posts/search" method="get">
-<input type="text" name="interest" class="search rounded" style="margin-left:-60px;height:20px;width:180px;" placeholder="Search for movie,music"> 
-<input type="text" name="place" class="search square" style="margin-top:-38px; margin-left:200px; height:20px;width:180px;" placeholder="Place: MA, for example">
+<input type="text" name="interest" class="search rounded" style="margin-left:-60px;height:20px;width:180px;" placeholder="Search by interest"> 
+<input type="text" name="place" class="search square" style="margin-top:-38px; margin-left:200px; height:20px;width:180px;" placeholder="Search by Location">
 <input type="submit" name="search" value="Search Now" style="margin-top:-40px; margin-left:450px; width:100px; height:35px;" >
 
 </form>
@@ -214,16 +214,16 @@ function newDoc()
   <fieldset>
     <label for="interest">Activity</label>
     <input type="text" style="width:300px;" name="interest" id="interest" placeholder="Movie,Music" class="text ui-widget-content ui-corner-all">
-    <label for="email">Time frame</label>
+    <label for="Time">Data and time</label>
     <input type="text" style="width:300px;" name="Time" id="time" placeholder="11:20am-2:20pm Nov 12th" class="text ui-widget-content ui-corner-all">
-    <label for="password">Place</label>
-    <input type="text" style="width:300px;" name="place" id="place" placeholder="Cambridge,MA" class="text ui-widget-content ui-corner-all">
+    <label for="place">Location</label>
+    <input type="text" style="width:300px;" name="place" id="place" placeholder="Cambridge, MA" class="text ui-widget-content ui-corner-all">
   </fieldset>
   </form>
 </div>
  
 <div id='profilemenu' >
-   <div id size="fontsize" style="color:#c0ac0f; font-size:40px; position:absolute; flow:left; margin-left:50px;">
+   <div id size="fontsize" style="color:#ffffff; font-size:40px; position:absolute; flow:left; margin-left:50px;">
 			<strong>   Spur!</strong>
 		</div>
 	<div id ="mainpage" >
@@ -241,8 +241,8 @@ function newDoc()
         <!-- Menu options for users who are not logged in -->
         <?php else: ?>
 
-            <a href='/users/signup'>Sign up</a>
-            <a href='/users/index'>Log in</a>
+            <a href='/users/signup'>Sign Up</a>
+            <a href='/users/index'>Log In</a>
         <?php endif; ?>
      </div>
        
@@ -262,24 +262,46 @@ function newDoc()
 </div>
 
 <br>
+
 <!- bulletin board- >
 <div id ='windows'>
-  <h1 style="font-family:Arial; font-size:20px;">Existing Posts:</h1>
+  <h1 style="font-family:Arial; font-size:20px;">Current Posts:</h1>
 <?php foreach($posts as $post): ?>
-<div id = "box" style="border: 1px solid black; font-size:14px; width:90%;">
-<article>
-   <img src= "/uploads/<?=$post['picture'];?>" style = "height:70px; width:70px;"><br> 
-    <div style="position:absolute; margin-left:80px; margin-top:-70px;">   
-    <strong style="color:#819FF7"><?=$post['first_name']?> <?=$post['last_name']?> posted: </strong>
+
+
+<!-- each post -->
+<div id = "box" style="border: 2px solid black; background-color:e1d9da; font-size:14px; width:90%; border-radius: 8px; -moz-border-radius: 4px; -webkit-border-radius: 4px;">
+
+   <img src= "/uploads/<?=$post['picture'];?>" style = "position:absolute; margin-left:-350px; height:70px; width:70px;">    
+    <div style="position:relative; text-align:center;">
+       
     <?=$post['content']?><br>  
-    Activity: <?=$post['interest']?><br>
+    Activity: <strong > <?=$post['interest']?> </strong><br>
     Time: <?=$post['time']?><br>
     Place: <?=$post['place']?> &nbsp;&nbsp;
-    <time datetime="<?=Time::display($post['created'],'Y-m-d G:i')?>">
-        <?=Time::display($post['created'])?>
     </time>
     </div>
-</article>
+    
+    <div id="name" style="margin-left:-300px;">
+    <strong style="color:#819FF7"><?=$post['first_name']?> <?=$post['last_name']?> </strong>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <time style="margin-left:100px;" datetime="<?=Time::display($post['created'],'Y-m-d G:i')?>">
+        <?=Time::display($post['created'])?>
+    </time>
+	</div>
+	
+	
+	<input type='Submit' value='I want to join' style= "background:17bccc;"></a>
+	
+	<?php if(isset($connections[$user['user_id']])): ?>
+        <a href='/posts/unfollow/<?=$user['user_id']?>'>
+        <input type='Submit' value='Unfollow' style= "background:17bccc;"></a> 		
+    <!-- Otherwise, show the follow link -->
+    <?php else: ?>
+        <a href='/posts/follow/<?=$user['user_id']?>'><input type='submit' value='Follow' style= "background:17bccc;"></a> 
+    <?php endif; ?>
+	
+		
 </div>
 <br>
 <?php endforeach; ?>

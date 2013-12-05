@@ -9,16 +9,17 @@ class users_controller extends base_controller {
         echo "This is the index page";
     }
     
+    
     public function p_upload()
 	{
-	$picture= Upload::upload($_FILES, "/uploads/", array("jpg", "jpeg", "gif", "png"), $this->user->user_id);
+	$picture= Upload::upload($_FILES, "/uploads/", array("jpg", "jpeg", "gif", "png","PNG","JPG","JPEG","GIF"), $this->user->user_id);
 		
 		$data = Array("picture" => $picture);
 		
 		//Resize and Save Image
-	//	$imageObj = new Image('/Users/weijia/Desktop/CS50/project/p2.geohangout.biz-master/uploads/'.$picture);
-	//	$imageObj->resize(150,150,'crop');
-	//	$imageObj->save_image('Users/weijia/Desktop/CS50/project/p2.geohangout.biz-master/uploads/'.$picture);		
+		$imageObj = new Image('/Users/weijia/Desktop/CS50/project/p2.geohangout.biz-master/uploads/'.$picture);
+		$imageObj->resize(300,300,'crop');
+		$imageObj->save_image('/Users/weijia/Desktop/CS50/project/p2.geohangout.biz-master/uploads/'.$picture);		
 		
 		DB::instance(DB_NAME)->update("users", $data, "WHERE user_id = '".$this->user->user_id."'");
 		
@@ -77,6 +78,13 @@ class users_controller extends base_controller {
 			
 		else 
 		{
+			if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+			{
+				Router::redirect("/users/signup/uniqueness");
+			}
+			
+			else
+			{
      		$_POST['created'] = Time::now();
      	 	$_POST['modified'] = Time::now();
      		$_POST['password'] = sha1(PASSWORD_SALT.$_POST['password']); 
@@ -96,10 +104,29 @@ class users_controller extends base_controller {
 			$from = "hhuangweijia@gmail.com";
 			$headers = "From:" . $from;
 			mail($to,$subject,$message,$headers);
+			
+			#follow yourself
+			
+			$data = Array(
+			"created" => Time::now(),
+			"user_id" => $user_id,
+			"user_id_followed" => $user_id
+			);
+        
+        	# Do the insert
+			DB::instance(DB_NAME)->insert('users_users', $data);
 	    	
 	    	# Send them to their profile
 	    	Router::redirect('/users/profile');
-    	}
+	    	
+	    	# Prepare the data array to be inserted
+    
+
+			# Do the insert
+			DB::instance(DB_NAME)->insert('users_users', $data);
+	    		    	
+	    	}
+    	}   	
     }
     
     

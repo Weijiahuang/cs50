@@ -85,6 +85,38 @@ class posts_controller extends base_controller {
 		}
     }
     
+    
+    #  Search for users by their name	 	
+	    public function searchName()	 	
+	   {	 	
+		    $this->template->content = View::instance('v_posts_users');	 	
+			$this->template->title   = "Find Users";	 	
+			if(isset($_GET['search']))	 	
+			{	 	
+		     	 $search_name= $_GET['name'];	 		
+		     		 	
+			 	 	 	
+			 	$q = 'SELECT	 	
+	    			users.first_name,	 	
+					users.last_name	 	
+					FROM users	 	
+					WHERE users.first_name like "%'.$search_name.'%"	 	
+					OR users.last_name like "%'.$search_name.'%" 	 	
+					ORDER BY users.created DESC';	 						 	
+						 	
+					# Run the query, store the results in the variable $users	 	
+					$users = DB::instance(DB_NAME)->select_rows($q);	 	
+					
+					# Pass data to the View	 	
+					$this->template->content->users = $users;	 	
+		 	
+					# Render the View	 	
+					echo $this->template; 	 	
+					 											 	
+			}	 	
+	    }
+	    
+    
     public function index()
     {
     
@@ -144,6 +176,26 @@ class posts_controller extends base_controller {
     	echo  $this->template;
     }
     
+    public function followers() 	 	
+	    {	 	
+	    	$this->template->content = View::instance('v_posts_followers');	 	
+	    		 	
+	    	$q ='SELECT *	 	
+	    		FROM users';	 	
+	    		 	
+	    	$users = DB::instance(DB_NAME)->select_rows($q);	 	
+	    		 	
+	    	$q = "SELECT *	 	
+	    		FROM users_users	 	
+	    		WHERE user_id = ".$this->user->user_id;	 	
+	    			 	
+	    	$connections = DB::instance(DB_NAME)->select_array($q, 'user_id_followed');	 	
+	    		 	
+	    	$this-> template-> content-> users = $users;	 	
+	    	$this->template->content->connections = $connections;	 		    		 	
+	    	echo  $this->template;	 	
+	    }
+    
     
     public function follow($user_id_followed) {
 
@@ -172,6 +224,19 @@ class posts_controller extends base_controller {
     Router::redirect("/posts/users");
 
 	}
+	
+	public function join($user_id_followed) {
+
+    # Delete this connection
+    $where_condition = 'WHERE user_id = '.$this->user->user_id.' AND user_id_followed = '.$user_id_followed;
+    DB::instance(DB_NAME)->delete('users_users', $where_condition);
+
+    # Send them back
+    Router::redirect("/posts/users");
+
+	}
+	
+	
 }
 
 
